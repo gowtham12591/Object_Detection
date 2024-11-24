@@ -1,0 +1,11 @@
+django
+djangorestframework
+psycopg2-binary
+tensorflow 
+pillow
+opencv-python
+gunicorn
+torch 
+torchvision
+pytest-cov
+pytest-django
