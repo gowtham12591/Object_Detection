@@ -1,5 +1,5 @@
 # Load the pretrained model for object detection, also load the image along with its respective preprocessing 
-
+# Import the required libraries
 import tensorflow as tf
 import numpy as np
 import cv2
@@ -10,12 +10,10 @@ from torchvision.transforms import functional as F
 
 # certificate bypass
 import urllib3
-urllib3.disable_warnings()
-
 import os
-os.environ["CURL_CA_BUNDLE"] = ""
-
 import ssl
+urllib3.disable_warnings()
+os.environ["CURL_CA_BUNDLE"] = ""
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # -------------- Tensoirflow Framework --------------------
@@ -23,17 +21,22 @@ class ObjectDetectorTf:
     def __init__(self, model_path):
         self.model = tf.saved_model.load(model_path)
 
+    # Load the image
     def load_image(self, image_path):
         image = cv2.imread(image_path)
         if image is None:
             raise ValueError("Image could not be loaded. Check the file path.")
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+    # Preprocess the input and predict the objects
     def predict(self, image_path, threshold=0.5):
         image = self.load_image(image_path)
+        # convert the image suitable for tensorflow framework
         input_tensor = tf.convert_to_tensor(image)[tf.newaxis, ...]
+        # Detect the image and share the findings
         detections = self.model(input_tensor)
 
+        # Append the results
         results = []
         for i in range(int(detections['num_detections'][0])):
             class_id = int(detections['detection_classes'][0][i])
@@ -63,16 +66,19 @@ class ObjectDetectorPyt:
 
         self.model.eval()
 
+    # Load the image
     def load_image(self, image_path):
         image = cv2.imread(image_path)
         if image is None:
             raise ValueError("Image could not be loaded. Check the file path.")
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
+    
+    # Preprocess the image
     def preprocess_image(self, image):
         image_tensor = F.to_tensor(image).unsqueeze(0)
         return image_tensor.to(self.device)
-
+    
+    # Predict the results
     def predict(self, image_path, threshold=0.5):
         image = self.load_image(image_path)
         input_tensor = self.preprocess_image(image)
